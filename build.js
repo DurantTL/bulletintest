@@ -5,153 +5,478 @@ const INPUT_FILE = 'boletin.docx';
 const TEMPLATE_FILE = 'template.html';
 const OUTPUT_FILE = 'index.html';
 
-// --- CONFIGURATION ---
-// You can toggle this if a church strictly uses one language, 
-// but leaving both works for hybrid/all churches.
-const KEYWORDS = {
-    SECTION_SS: ['escuela sabatica', 'escuela sabática', 'sabbath school', 'bible study'],
-    SECTION_WS: ['culto divino', 'divine service', 'worship service', 'divine worship'],
-    SECTION_ANN: ['anuncios', 'announcements', 'upcoming events', 'church family'],
-    
-    // Field Mappings (Look for these words in lines)
-    DATE: ['202', 'december', 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
-    PASTOR: ['pastor', 'speaker', 'orador'],
-    
-    // Sabbath School Fields
-    SS_WELCOME: ['bienvenida', 'welcome', 'superintendent'],
-    SS_HYMN: ['himno', 'hymn', 'song', 'praise'],
-    SS_LESSON: ['repaso', 'lección', 'lesson', 'study'],
-    SS_MISSION: ['misionero', 'mission', 'world mission'],
-    SS_READING: ['lectura', 'scripture', 'reading'],
+// ============================================================
+// VAN BUREN SPANISH BULLETIN PARSER
+// Extracts all fields for the church bulletin website
+// ============================================================
 
-    // Worship Service Fields
-    WS_CALL: ['call to worship', 'llamado', 'invocación'],
-    WS_INVOCATION: ['invocación', 'invocation', 'prayer'],
-    WS_HYMN: ['himno', 'hymn', 'songs of praise', 'opening song'],
-    WS_OFFERING: ['diezmo', 'tithe', 'offering', 'giving', 'presupuesto'],
-    WS_CHILDREN: ['infantil', 'children', 'lambs', 'niños'],
-    WS_SCRIPTURE: ['lectura', 'scripture', 'reading', 'responsive'],
-    WS_SERMON: ['sermón', 'sermon', 'message', 'homily'],
-    WS_SPECIAL: ['especial', 'special music', 'musica especial'],
-    WS_CLOSING: ['final', 'closing', 'benediction', 'postlude'],
-    
-    // Info
-    SUNSET: ['puesta', 'sunset', 'sundown'],
-    YOUTH: ['sociedad', 'jóvenes', 'youth', 'vespers']
-};
+// Normalize text for comparison (remove accents, lowercase)
+const normalize = (text) => text.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-// Helper: Check for keywords
-const check = (text, keywords) => keywords.some(k => text.toLowerCase().includes(k));
+// Check if line contains any keyword
+const hasKeyword = (line, keywords) => 
+    keywords.some(k => normalize(line).includes(normalize(k)));
 
-// Helper: Extract value from line (splits by tabs or double spaces)
-const findValue = (line, keys) => {
-    if (check(line, keys)) {
-        // Regex splits by: Tab OR Comma OR 2+ Spaces
-        const parts = line.split(/\t|,|\s{2,}/); 
-        // Return the last part (usually the name/person)
-        return parts.length > 1 ? parts[parts.length - 1].trim() : null;
-    }
+// Extract hymn number from text
+const extractHymn = (text) => {
+    const match = text.match(/#\s*(\d{1,3})/);
+    if (match) return `Himno #${match[1]}`;
+    const match2 = text.match(/himno\s*#?\s*(\d{1,3})/i);
+    if (match2) return `Himno #${match2[1]}`;
     return null;
 };
 
-// Helper: Extract Hymn Number
-const findHymn = (line, keys) => {
-    if (check(line, keys)) {
-        const match = line.match(/#\d+/); // Looks for #123
-        if (match) return "Hymn " + match[0];
-        
-        // Fallback for "Hymn 123"
-        const match2 = line.match(/Hymn \d+/i);
-        if(match2) return match2[0];
-    }
-    return null;
+// Extract time from text
+const extractTime = (text) => {
+    const match = text.match(/(\d{1,2}:\d{2})\s*(am|pm)?/i);
+    return match ? match[0] : null;
 };
 
+// Extract scripture reference
+const extractScripture = (text) => {
+    const match = text.match(/([A-Za-záéíóúñ]+\.?\s*\d+:\d+(-\d+)?)/i);
+    return match ? match[0].trim() : null;
+};
+
+// Look ahead to find value after keyword line
+const lookahead = (lines, index, maxLines = 3) => {
+    for (let j = 1; j <= maxLines; j++) {
+        const next = lines[index + j];
+        if (!next || next.length === 0) continue;
+        // Skip if it looks like another keyword/section
+        if (next.length < 40 && !next.match(/^\d/) && !next.match(/^#/)) {
+            // Check if it's a person name or value
+            if (next.length > 2) return next;
+        }
+    }
+    return '';
+};
+
+// Look ahead specifically for hymn
+const lookaheadHymn = (lines, index) => {
+    for (let j = 1; j <= 2; j++) {
+        const next = lines[index + j];
+        if (next) {
+            const hymn = extractHymn(next);
+            if (hymn) return hymn;
+        }
+    }
+    return '';
+};
+
+// Look ahead for person after hymn
+const lookaheadPersonAfterHymn = (lines, index) => {
+    for (let j = 1; j <= 3; j++) {
+        const next = lines[index + j];
+        if (next && extractHymn(next)) {
+            // Found hymn, now look for person
+            const person = lines[index + j + 1];
+            if (person && person.length > 2 && person.length < 50) {
+                return person;
+            }
+        }
+    }
+    return '';
+};
+
+// ============================================================
+// MAIN PARSER
+// ============================================================
 mammoth.extractRawText({ path: INPUT_FILE }).then(result => {
-    const text = result.value;
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const lines = result.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     
-    // Data Object (The content to fill)
+    // Complete data object matching template placeholders
     let d = {
-        date: "", pastor: "", 
-        ss_welcome: "", ss_hymn: "", ss_reading: "", ss_mission: "", ss_lesson: "",
-        ws_call: "", ws_invocation: "", ws_hymn: "", ws_scripture: "", ws_offering: "", ws_children: "", ws_special: "", ws_sermon: "", ws_closing: "",
-        sunset: "", youth: "", announcements: ""
+        // Header
+        date: '',
+        pastor: '',
+        
+        // Verse of the week
+        verse_text: '',
+        verse_ref: '',
+        
+        // Elder
+        elder: '',
+        
+        // Escuela Sabática
+        ss_welcome_who: '',
+        ss_hymn_inicial: '',
+        ss_hymn_inicial_who: 'Servicio de Canto',
+        ss_lectura_ref: '',
+        ss_lectura_who: '',
+        ss_oracion_who: '',
+        ss_misionero_who: '',
+        ss_especial_who: '',
+        ss_rumbo_who: '',
+        ss_repaso_info: '',
+        ss_repaso_who: 'Maestros',
+        ss_hymn_final: '#478',
+        ss_hymn_final_who: 'Servicio de Canto',
+        ss_oracion_final_who: '',
+        ss_min_misioneros_who: '',
+        
+        // Culto Divino
+        cd_entrada_hymn: 'Himno #33',
+        cd_entrada_who: 'Servicio de Canto',
+        cd_doxologia_hymn: 'Himno #32',
+        cd_doxologia_who: 'Servicio de Canto',
+        cd_invocacion_who: '',
+        cd_bienvenida_info: 'Canto de Bienvenida',
+        cd_bienvenida_who: '',
+        cd_hymn_inicial: '',
+        cd_hymn_inicial_who: 'Servicio de Canto',
+        cd_lectura_ref: '',
+        cd_lectura_who: '',
+        cd_oracion_hymn: 'Himno #35',
+        cd_oracion_who: '',
+        cd_diezmo_hymn: 'Himno #524',
+        cd_diezmo_who: '',
+        cd_rincon_who: '',
+        cd_especial_who: '',
+        cd_sermon_who: '',
+        cd_hymn_final: 'Himno #267',
+        cd_hymn_final_who: 'Servicio de Canto',
+        cd_oracion_final_who: '',
+        cd_salida_who: 'Diaconos',
+        
+        // Info
+        juventud_time: '',
+        sunset_time: '',
+        
+        // Announcements
+        announcements: ''
     };
 
     let section = 'header';
-    let ann_list = [];
+    let announcements = [];
+    let inVerseArea = false;
 
-    lines.forEach((line, index) => {
-        const lower = line.toLowerCase();
-
-        // 1. SECTION DETECTION
-        if (check(lower, KEYWORDS.SECTION_SS)) { section = 'ss'; return; }
-        if (check(lower, KEYWORDS.SECTION_WS)) { section = 'ws'; return; }
-        if (check(lower, KEYWORDS.SECTION_ANN)) { section = 'announcements'; return; }
-
-        // 2. HEADER LOGIC
-        if (section === 'header') {
-            // Find Date (and ignore the word "Bulletin")
-            if (check(lower, KEYWORDS.DATE) && !lower.includes('bulletin')) d.date = line;
-            // Find Pastor (in header area)
-            if (check(lower, KEYWORDS.PASTOR)) d.pastor = findValue(line, KEYWORDS.PASTOR) || line;
-        }
-
-        // 3. SABBATH SCHOOL LOGIC
-        if (section === 'ss') {
-            const val_wel = findValue(line, KEYWORDS.SS_WELCOME); if(val_wel) d.ss_welcome = val_wel;
-            const val_hymn = findHymn(line, KEYWORDS.SS_HYMN); if(val_hymn) d.ss_hymn = val_hymn;
-            const val_les = findValue(line, KEYWORDS.SS_LESSON); if(val_les) d.ss_lesson = val_les;
-            const val_mis = findValue(line, KEYWORDS.SS_MISSION); if(val_mis) d.ss_mission = val_mis;
-        }
-
-        // 4. WORSHIP SERVICE LOGIC
-        if (section === 'ws') {
-            const val_call = findValue(line, KEYWORDS.WS_CALL); if(val_call) d.ws_call = val_call;
-            const val_inv = findValue(line, KEYWORDS.WS_INVOCATION); if(val_inv) d.ws_invocation = val_inv;
-            const val_hymn = findHymn(line, KEYWORDS.WS_HYMN); if(val_hymn) d.ws_hymn = val_hymn;
-            const val_off = findValue(line, KEYWORDS.WS_OFFERING); if(val_off) d.ws_offering = val_off;
-            const val_child = findValue(line, KEYWORDS.WS_CHILDREN); if(val_child) d.ws_children = val_child;
-            const val_spec = findValue(line, KEYWORDS.WS_SPECIAL); if(val_spec) d.ws_special = val_spec;
-            const val_sermon = findValue(line, KEYWORDS.WS_SERMON); if(val_sermon) d.ws_sermon = val_sermon;
-            const val_close = findValue(line, KEYWORDS.WS_CLOSING); if(val_close) d.ws_closing = val_close;
-
-            // Scripture often has "Text - Person". Try to split it.
-            if (check(lower, KEYWORDS.WS_SCRIPTURE)) {
-                // Logic: Grab the part that looks like numbers (23:4)
-                if(line.match(/\d+:\d+/)) d.ws_scripture = line.replace(/scripture|reading|lectura/i, '').trim();
-                else d.ws_scripture = findValue(line, KEYWORDS.WS_SCRIPTURE);
+    // --- PASS 1: Find date ---
+    const datePatterns = [
+        /^\d{1,2}\s+de\s+[a-záéíóúñ]+\s+(del?\s+)?\d{4}$/i,  // "22 de Noviembre del 2025"
+        /^[a-záéíóúñ]+\s+\d{1,2},?\s*\d{4}$/i                // "Enero 3, 2026"
+    ];
+    
+    for (let i = 0; i < Math.min(30, lines.length); i++) {
+        for (const pattern of datePatterns) {
+            if (pattern.test(lines[i])) {
+                d.date = lines[i];
+                break;
             }
         }
-
-        // 5. ANNOUNCEMENTS
-        if (section === 'announcements') {
-            if (check(lower, KEYWORDS.SUNSET)) {
-                const time = line.match(/\d{1,2}:\d{2}\s?(am|pm)?/i);
-                if (time) d.sunset = time[0];
-            } 
-            else if (check(lower, KEYWORDS.YOUTH)) {
-                 // Try to find a time
-                 const time = line.match(/\d{1,2}:\d{2}\s?(am|pm)?/i);
-                 d.youth = time ? time[0] : line;
-            } 
-            else if (line.length > 5 && !check(lower, KEYWORDS.SECTION_ANN)) {
-                // Remove bullets like "•"
-                const cleanLine = line.replace(/^[•\-\*]\s*/, '');
-                ann_list.push(`<li>${cleanLine}</li>`);
-            }
-        }
-    });
-
-    d.announcements = ann_list.join('');
-
-    // Write HTML
-    let html = fs.readFileSync(TEMPLATE_FILE, 'utf8');
-    for (const [key, value] of Object.entries(d)) {
-        // If value is empty, we can choose to leave it blank or put "---"
-        html = html.replace(new RegExp(`{{${key}}}`, 'g'), value || '');
+        if (d.date) break;
     }
-    fs.writeFileSync(OUTPUT_FILE, html);
-    console.log("Bulletin built successfully.");
+
+    // --- PASS 2: Find pastor in header ---
+    for (let i = 0; i < Math.min(15, lines.length); i++) {
+        if (hasKeyword(lines[i], ['pastor'])) {
+            // Check if name is on same line or next line
+            const parts = lines[i].split(/[:\t]/);
+            if (parts.length > 1 && parts[1].trim().length > 3) {
+                d.pastor = parts[1].trim();
+            } else {
+                const next = lines[i + 1];
+                if (next && next.length > 3 && next.length < 50) {
+                    d.pastor = next;
+                }
+            }
+            break;
+        }
+    }
+
+    // --- PASS 3: Find verse ---
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Look for quoted text
+        if ((line.startsWith('"') || line.startsWith('"') || line.startsWith('«')) && !d.verse_text) {
+            d.verse_text = line;
+            // Look for reference on next few lines
+            for (let j = 1; j <= 3; j++) {
+                const ref = lines[i + j];
+                if (ref && extractScripture(ref) && ref.length < 30) {
+                    d.verse_ref = ref;
+                    break;
+                }
+            }
+            break;
+        }
+        
+        // Stop looking after reaching sections
+        if (hasKeyword(line, ['escuela sabática', 'escuela sabatica'])) break;
+    }
+
+    // --- PASS 4: Main section parsing ---
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const lower = normalize(line);
+
+        // Section detection (only short lines)
+        if (line.length < 30) {
+            if (hasKeyword(lower, ['escuela sabática', 'escuela sabatica'])) { 
+                section = 'ss'; 
+                continue; 
+            }
+            if (hasKeyword(lower, ['culto divino'])) { 
+                section = 'cd'; 
+                continue; 
+            }
+            if (hasKeyword(lower, ['anuncios'])) { 
+                section = 'ann'; 
+                continue; 
+            }
+        }
+
+        // ========== ESCUELA SABÁTICA ==========
+        if (section === 'ss') {
+            // Anciano de turno (appears in SS section usually)
+            if (hasKeyword(line, ['anciano de turno']) && !d.elder) {
+                d.elder = lookahead(lines, i);
+            }
+            
+            // Bienvenida
+            if (hasKeyword(line, ['bienvenida']) && !d.ss_welcome_who) {
+                d.ss_welcome_who = lookahead(lines, i);
+            }
+            
+            // Himno Inicial
+            if (hasKeyword(line, ['himno inicial']) && !d.ss_hymn_inicial) {
+                d.ss_hymn_inicial = lookaheadHymn(lines, i);
+            }
+            
+            // Lectura Bíblica
+            if (hasKeyword(line, ['lectura bíblica', 'lectura biblica']) && !d.ss_lectura_ref) {
+                for (let j = 1; j <= 3; j++) {
+                    const next = lines[i + j];
+                    if (next) {
+                        const scripture = extractScripture(next);
+                        if (scripture) {
+                            d.ss_lectura_ref = scripture;
+                            const person = lines[i + j + 1];
+                            if (person && person.length > 2 && person.length < 40) {
+                                d.ss_lectura_who = person;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Oración (not final)
+            if (hasKeyword(line, ['oración', 'oracion']) && !hasKeyword(line, ['final']) && !d.ss_oracion_who) {
+                d.ss_oracion_who = lookahead(lines, i);
+            }
+            
+            // Misionero
+            if (hasKeyword(line, ['misionero']) && !hasKeyword(line, ['min.']) && !d.ss_misionero_who) {
+                d.ss_misionero_who = lookahead(lines, i);
+            }
+            
+            // Especial (SS)
+            if (hasKeyword(line, ['especial']) && !d.ss_especial_who) {
+                d.ss_especial_who = lookahead(lines, i);
+            }
+            
+            // Rumbo
+            if (hasKeyword(line, ['rumbo']) && !d.ss_rumbo_who) {
+                d.ss_rumbo_who = lookahead(lines, i);
+            }
+            
+            // Repaso de la Lección
+            if (hasKeyword(line, ['repaso']) && !d.ss_repaso_info) {
+                const next = lookahead(lines, i);
+                if (next) d.ss_repaso_info = next;
+            }
+            
+            // Himno Final (SS)
+            if (hasKeyword(line, ['himno final']) && !d.ss_hymn_final) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.ss_hymn_final = hymn;
+            }
+            
+            // Oración Final (SS)
+            if (hasKeyword(line, ['oración final', 'oracion final']) && !d.ss_oracion_final_who) {
+                d.ss_oracion_final_who = lookahead(lines, i);
+            }
+            
+            // Min. Misioneros
+            if (hasKeyword(line, ['min. misioneros', 'minutos misioneros']) && !d.ss_min_misioneros_who) {
+                d.ss_min_misioneros_who = lookahead(lines, i);
+            }
+        }
+
+        // ========== CULTO DIVINO ==========
+        if (section === 'cd') {
+            // Entrada de Oficiante
+            if (hasKeyword(line, ['entrada de oficiante', 'entrada']) && !d.cd_entrada_hymn) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.cd_entrada_hymn = hymn;
+            }
+            
+            // Doxología
+            if (hasKeyword(line, ['doxología', 'doxologia']) && !d.cd_doxologia_hymn) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.cd_doxologia_hymn = hymn;
+            }
+            
+            // Invocación
+            if (hasKeyword(line, ['invocación', 'invocacion']) && !d.cd_invocacion_who) {
+                d.cd_invocacion_who = lookahead(lines, i);
+            }
+            
+            // Bienvenida (CD)
+            if (hasKeyword(line, ['bienvenida']) && !d.cd_bienvenida_who) {
+                d.cd_bienvenida_who = lookahead(lines, i);
+            }
+            
+            // Himno Inicial (CD)
+            if (hasKeyword(line, ['himno inicial']) && !d.cd_hymn_inicial) {
+                d.cd_hymn_inicial = lookaheadHymn(lines, i);
+            }
+            
+            // Lectura Bíblica (CD)
+            if (hasKeyword(line, ['lectura bíblica', 'lectura biblica']) && !d.cd_lectura_ref) {
+                for (let j = 1; j <= 3; j++) {
+                    const next = lines[i + j];
+                    if (next) {
+                        const scripture = extractScripture(next);
+                        if (scripture) {
+                            d.cd_lectura_ref = scripture;
+                            const person = lines[i + j + 1];
+                            if (person && person.length > 2 && person.length < 40) {
+                                d.cd_lectura_who = person;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Oración (CD) - with hymn
+            if (hasKeyword(line, ['oración', 'oracion']) && !hasKeyword(line, ['final']) && !d.cd_oracion_who) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.cd_oracion_hymn = hymn;
+                d.cd_oracion_who = lookaheadPersonAfterHymn(lines, i) || lookahead(lines, i);
+            }
+            
+            // Diezmos y Ofrendas
+            if (hasKeyword(line, ['diezmo', 'ofrenda']) && !d.cd_diezmo_who) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.cd_diezmo_hymn = hymn;
+                d.cd_diezmo_who = lookaheadPersonAfterHymn(lines, i) || lookahead(lines, i);
+            }
+            
+            // Rincón Infantil
+            if (hasKeyword(line, ['rincón infantil', 'rincon infantil']) && !d.cd_rincon_who) {
+                d.cd_rincon_who = lookahead(lines, i);
+            }
+            
+            // Especial (CD)
+            if (hasKeyword(line, ['especial']) && !d.cd_especial_who) {
+                d.cd_especial_who = lookahead(lines, i);
+            }
+            
+            // Sermón
+            if (hasKeyword(line, ['sermón', 'sermon']) && !d.cd_sermon_who) {
+                d.cd_sermon_who = lookahead(lines, i);
+            }
+            
+            // Himno Final (CD)
+            if (hasKeyword(line, ['himno final']) && !d.cd_hymn_final) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.cd_hymn_final = hymn;
+            }
+            
+            // Canto Tema (alternative name for closing hymn)
+            if (hasKeyword(line, ['canto tema']) && !d.cd_hymn_final) {
+                const hymn = lookaheadHymn(lines, i);
+                if (hymn) d.cd_hymn_final = hymn;
+            }
+            
+            // Oración Final (CD)
+            if (hasKeyword(line, ['oración final', 'oracion final']) && !d.cd_oracion_final_who) {
+                d.cd_oracion_final_who = lookahead(lines, i);
+            }
+            
+            // Salida en Orden
+            if (hasKeyword(line, ['salida']) && !d.cd_salida_who) {
+                const who = lookahead(lines, i);
+                if (who) d.cd_salida_who = who;
+            }
+        }
+
+        // ========== ANUNCIOS ==========
+        if (section === 'ann') {
+            // Sunset time
+            if (hasKeyword(line, ['puesta de sol', 'puesta del sol'])) {
+                const time = extractTime(line);
+                if (time) d.sunset_time = time;
+            }
+            // Youth meeting time
+            else if (hasKeyword(line, ['sociedad de jóvenes', 'sociedad de jovenes', 'juventud'])) {
+                const time = extractTime(line);
+                if (time) d.juventud_time = time;
+            }
+            // Regular announcements
+            else if (line.length > 20) {
+                // Skip social media links and footer quotes
+                if (!hasKeyword(line, ['facebook', 'youtube', 'instagram', 'siguenos', 'síguenos', 
+                                        'le esperamos', 'dios le bendiga', 'tome tiempo', 
+                                        'efesios', 'estad, pues'])) {
+                    const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+                    announcements.push(`<li>${cleanLine}</li>`);
+                }
+            }
+        }
+    }
+
+    d.announcements = announcements.join('\n          ');
+
+    // --- OUTPUT ---
+    try {
+        let html = fs.readFileSync(TEMPLATE_FILE, 'utf8');
+        for (const [key, value] of Object.entries(d)) {
+            html = html.replace(new RegExp(`{{${key}}}`, 'g'), value || '');
+        }
+        fs.writeFileSync(OUTPUT_FILE, html);
+        console.log('✅ Bulletin generated: ' + OUTPUT_FILE);
+    } catch (err) {
+        console.error('❌ Template error:', err.message);
+    }
+
+    // --- DISPLAY RESULTS ---
+    console.log('\n📊 Extracted Data:\n');
+    console.log('─── HEADER ───');
+    console.log(`  Date:    ${d.date || '(not found)'}`);
+    console.log(`  Pastor:  ${d.pastor || '(not found)'}`);
+    console.log(`  Elder:   ${d.elder || '(not found)'}`);
+    console.log(`  Verse:   ${d.verse_text ? d.verse_text.substring(0, 50) + '...' : '(not found)'}`);
+    
+    console.log('\n─── ESCUELA SABÁTICA ───');
+    console.log(`  Bienvenida:      ${d.ss_welcome_who || '-'}`);
+    console.log(`  Himno Inicial:   ${d.ss_hymn_inicial || '-'}`);
+    console.log(`  Lectura:         ${d.ss_lectura_ref || '-'} → ${d.ss_lectura_who || '-'}`);
+    console.log(`  Misionero:       ${d.ss_misionero_who || '-'}`);
+    console.log(`  Min. Misioneros: ${d.ss_min_misioneros_who || '-'}`);
+    
+    console.log('\n─── CULTO DIVINO ───');
+    console.log(`  Invocación:      ${d.cd_invocacion_who || '-'}`);
+    console.log(`  Bienvenida:      ${d.cd_bienvenida_who || '-'}`);
+    console.log(`  Himno Inicial:   ${d.cd_hymn_inicial || '-'}`);
+    console.log(`  Lectura:         ${d.cd_lectura_ref || '-'} → ${d.cd_lectura_who || '-'}`);
+    console.log(`  Oración:         ${d.cd_oracion_hymn || '-'} → ${d.cd_oracion_who || '-'}`);
+    console.log(`  Diezmo:          ${d.cd_diezmo_hymn || '-'} → ${d.cd_diezmo_who || '-'}`);
+    console.log(`  Rincón Infantil: ${d.cd_rincon_who || '-'}`);
+    console.log(`  Especial:        ${d.cd_especial_who || '-'}`);
+    console.log(`  Sermón:          ${d.cd_sermon_who || '-'}`);
+    
+    console.log('\n─── INFO ───');
+    console.log(`  Sunset:    ${d.sunset_time || '(not found)'}`);
+    console.log(`  Juventud:  ${d.juventud_time || '(not found)'}`);
+    console.log(`  Anuncios:  ${announcements.length} items`);
+
+}).catch(err => {
+    console.error('❌ Error:', err.message);
+    process.exit(1);
 });
