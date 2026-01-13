@@ -111,12 +111,31 @@ Para evitar spam y proteger el sistema:
 Copiar este código HTML donde quieras mostrar el boletín:
 
 ```html
-<iframe 
-    src="https://TU_USUARIO.github.io/TU_REPOSITORIO/" 
-    style="width: 100%; border: none; height: 1600px; overflow: hidden;" 
-    title="Boletín Semanal"
-    scrolling="no">
-</iframe>
+<style>
+  .bulletin-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .bulletin-wrapper iframe {
+    width: 100%;
+    border: none;
+    height: 2400px;
+  }
+  @media (max-width: 768px) {
+    .bulletin-wrapper iframe {
+      height: 3200px; /* taller for stacked mobile layout */
+    }
+  }
+</style>
+
+<div class="bulletin-wrapper">
+  <iframe 
+      src="https://duranttl.github.io/bulletintest/" 
+      scrolling="no"
+      title="Boletín Semanal">
+  </iframe>
+</div>
 ```
 
 ---
