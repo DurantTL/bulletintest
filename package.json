@@ -1,0 +1,7 @@
+{
+  "name": "bulletin-builder",
+  "version": "1.0.0",
+  "dependencies": {
+    "mammoth": "^1.6.0"
+  }
+}

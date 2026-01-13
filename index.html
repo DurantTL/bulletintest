@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boletín</title>
+<style>
+  :root{ --brand: #bf630e; --brand-2:#bf630e; --accent:#0b6a53; --paper:#ffffff; --ink:#1a1a1a; --muted:#5e6a72; --font:"Inter", Arial, sans-serif; --radius:14px; --shadow:0 10px 28px rgba(0,0,0,.10); --line:#e8edf0; }
+  body { margin: 0; padding: 0; background: transparent; font-family: var(--font); }
+  .vb-bulletin{ color:var(--ink); max-width:1000px; margin:0 auto; padding:24px;}
+  .vb-hero{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#bf630e; padding:28px 24px; border-radius:var(--radius); box-shadow: var(--shadow); text-align:center; }
+  .vb-hero h1{margin:0 0 6px; font-size:clamp(26px,4vw,34px); letter-spacing:.2px; color:#fff;}
+  .vb-hero p, .vb-hero .meta{color:#fff; opacity:.95; margin:0;}
+  .vb-grid{display:grid; gap:20px; margin-top:20px; grid-template-columns:1.1fr 1fr;}
+  .vb-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); box-shadow: var(--shadow); padding:20px 18px;}
+  .vb-card h2{margin:0 0 10px; font-size:20px; color:var(--brand-2);}
+  .vb-verse{font-size:16px; line-height:1.7; border-left:4px solid var(--brand); padding-left:12px; margin-top:8px;}
+  .vb-ref{color:var(--muted); font-size:14px; margin-top:6px;}
+  .vb-table{width:100%; border-collapse:collapse; font-size:15px; margin-top:10px;}
+  .vb-table td{padding:8px 6px; vertical-align:middle;}
+  .vb-col-what{width:35%; text-align:left; font-weight:600;}
+  .vb-col-info{width:30%; text-align:center; font-style:italic;color: grey}
+  .vb-col-who{width:35%; text-align:right; color:black;}
+  .vb-table tr+tr td{border-top:1px dashed var(--line);}
+  .vb-list{margin:8px 0 0; padding-left:18px;}
+  .vb-list li{margin:8px 0; line-height:1.6;}
+  .vb-stats{display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:12px;}
+  .vb-stat{background:var(--paper); border:1px solid var(--line); border-radius:12px; text-align:center; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,.06);}
+  .vb-stat .k{display:block; font-size:13px; color:var(--muted);}
+  .vb-stat .v{display:block; font-size:18px; font-weight:700; color:var(--brand-2);}
+  .vb-footer-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; text-align: center; margin-top: 24px; font-size: 15px; color: var(--muted); }
+  .vb-rule{border:none; border-top:1px solid var(--line); margin:16px 0;}
+  @media (max-width:860px){ .vb-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="vb-bulletin">
+    <header class="vb-hero">
+        <h1>·S A B A D O·</h1>  
+        <h1>·Enero 3, 2026· </h1>
+        <p>902 Oak Grove Rd, Van Buren, AR 72956</p>
+        <div class="meta"> Pastor: <strong></strong></div>
+    </header>
+    <div class="vb-grid">
+        <article class="vb-card">
+            <h2>Versículo de la Semana</h2>
+            <div class="vb-verse"> No os acordéis de las cosas pasadas, ni traigáis a memoria las cosas antiguas. Isaías 43:18</div>
+            <div class="vb-ref"></div>
+            <hr class="vb-rule">
+            <h2>Escuela Sabática</h2>
+            <table class="vb-table">
+                <tr><td class="vb-col-what">Bienvenida</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Himno Inicial</td> <td class="vb-col-info"></td> <td class="vb-col-who">Servicio de Canto</td></tr>
+                <tr><td class="vb-col-what">Lectura Bíblica</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Misionero</td><td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Repaso de la Lección</td> <td class="vb-col-info"></td> <td class="vb-col-who">Maestros</td></tr>
+                <tr><td class="vb-col-what">Himno Final</td> <td class="vb-col-info">#478</td> <td class="vb-col-who">Servicio de Canto</td></tr>
+                <tr><td class="vb-col-what">Min. Misioneros</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+            </table>
+            <hr class="vb-rule">
+            <h2>Culto Divino</h2>
+            <table class="vb-table">
+                <tr><td class="vb-col-what">Invocación</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Bienvenida</td> <td class="vb-col-info">Canto de Bienvenida</td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Himno Inicial</td> <td class="vb-col-info"></td> <td class="vb-col-who">Servicio de Canto</td></tr>
+                <tr><td class="vb-col-what">Lectura Bíblica</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Oración</td> <td class="vb-col-info">Himno #35</td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Diezmos y Ofrendas</td> <td class="vb-col-info"></td> <td class="vb-col-who">Diego Araujo</td></tr>
+                <tr><td class="vb-col-what">Rincón Infantil</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Especial</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Sermón</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Himno Final</td> <td class="vb-col-info">Himno #267</td> <td class="vb-col-who">Servicio de Canto</td></tr>
+                <tr><td class="vb-col-what">Oración Final</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+            </table>
+        </article>
+        <aside>
+            <div class="vb-card" style="margin-bottom: 20px;">
+                <h4>Anciano de Turno:</h4>
+                <h3></h3>
+            </div>
+            <div class="vb-card">
+                <h2>Anuncios</h2>
+                <ul class="vb-list"><li>El Ministerio de la Mujer pide a toda la hermandad llevar en oración la Campaña que se va a llevar a cabo para en marzo, si Dios lo permite que tengamos bautismos y que bendiga a la hermana que va predicar durante esa semana, que todo lo que predique se Palabra de Dios, que ella sea un instrumento del Espiritu Santo.</li></ul>
+                <hr class="vb-rule">
+                <div class="vb-stats">
+                    <div class="vb-stat"><span class="k"></span>Sociedad de Jovenes<span class="v"></span></div>
+                    <div class="vb-stat"><span class="k">Puesta del Sol</span><span class="v"></span></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <div class="vb-footer-card"><strong>¡Le esperamos el próximo Sábado!</strong></div>
+</div>
+</body>
+</html>
