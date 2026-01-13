@@ -1,103 +1,100 @@
+📋 Church Bulletin Automator
+This system automatically updates the church website bulletin by reading a Word Document sent via email.
 
-# 📋 Generador Automático de Boletín (Church Bulletin Automation)
+🚀 Quick Start (For Church Secretaries)
+How to update the website:
 
-This system automatically converts a Word Document (`.docx`) into a web-ready HTML page for the church website. It runs entirely on GitHub, requiring no manual coding or copy-pasting each week.
+Open your email.
 
-## 🚀 How to Update the Bulletin (Weekly Workflow)
+Attach your bulletin file (Must be named boletin.docx).
 
-1. **Prepare your Word Doc:**
-* Ensure your file is named **`boletin.docx`**.
-* Make sure it follows the standard format (see *Word Document Formatting* below).
+Send the email to: [INSERT_YOUR_GMAIL_FORWARDER_HERE]
 
+Wait 2 minutes. The website will update automatically.
 
-2. **Upload to GitHub:**
-* Go to the **Code** tab of this repository.
-* Click **Add file** > **Upload files**.
-* Drag and drop your new `boletin.docx` file.
-* Click **Commit changes**.
+⚙️ Technical Setup (For Administrators)
+If you are setting this up for a new church, follow these 3 steps.
 
+Step 1: The Repository
+Fork this repository (create a copy for the specific church).
 
-3. **Wait ~60 Seconds:**
-* GitHub Actions will automatically detect the change, convert the text, build the HTML, and deploy it.
-* Your church website (via the iFrame) will update automatically.
+Go to Settings > Pages and enable GitHub Pages on the gh-pages branch.
 
+Copy the GitHub Pages URL. You will use this in the church website iframe.
 
+Step 2: The "Brain" (Make.com)
+We use Make.com to catch the email and send the file to GitHub.
 
----
+Create a Make.com account (Free tier is sufficient).
 
-## 🛠️ Initial Setup (One-Time)
+Create a Scenario: Webhooks (Custom Mailhook) -> GitHub (Update a File).
 
-If you are setting this up for the first time, ensure the following files exist in the repository:
+Webhook: Copy the generated email address (e.g., xyz@hook.make.com).
 
-1. **`package.json`**: Defines the software dependencies.
-2. **`build.js`**: The logic that reads the Word doc and fills the template.
-3. **`template.html`**: The HTML design/layout of the bulletin.
-4. **`.github/workflows/deploy.yml`**: The automation script.
+GitHub Node: * Repo: Select this church's repo.
 
-### Enable GitHub Pages
+Branch: main.
 
-1. Go to **Settings** > **Pages**.
-2. Under **Build and deployment**, select **Source**: `Deploy from a branch`.
-3. Select Branch: **`gh-pages`** (This branch is created automatically after your first successful run).
-4. Click **Save**.
-5. Copy the URL provided (e.g., `https://youruser.github.io/bulletin-repo/`).
+File Path: boletin.docx.
 
----
+File Content: Select the Data from the email attachment.
 
-## 💻 Website Integration
+Step 3: The "Bodyguard" (Gmail)
+To prevent spam and save credits, do not give the Make.com address to people. Use Gmail as a filter.
 
-To display this bulletin on your church website (WordPress, Wix, Squarespace, etc.), add an **HTML Code** block and paste the following.
+Create a dedicated Gmail (e.g., church.bulletin.update@gmail.com).
 
-*Replace `YOUR_GITHUB_PAGES_URL` with the link you copied in the setup step.*
+Add the Make.com address as a Forwarding Address.
 
-```html
-<iframe 
-    src="YOUR_GITHUB_PAGES_URL" 
-    style="width: 100%; border: none; height: 1400px; overflow: hidden;" 
-    title="Boletin Semanal"
-    scrolling="no">
-</iframe>
+Create a Filter in Gmail:
 
-```
+From: pastor@church.org OR secretary@church.org
 
----
+Has Attachment: Yes
 
-## 📝 Word Document Formatting Rules
+Action: Forward to Make.com address.
 
-For the automation to work, the system looks for specific "Keywords" in your Word document.
+📝 Document Formatting Guide
+The system is designed to be flexible, but it relies on Keywords to find information.
 
-1. **Section Headers:** Do not change these exact phrases (though capitalization doesn't matter):
-* `ESCUELA SABATICA`
-* `CULTO DIVINO`
-* `ANUNCIOS`
+Standard Sections: Ensure your Word document has clear headers (in English or Spanish):
 
+Sabbath School (or Escuela Sabática)
 
-2. **Tables:** Keep the program parts (Hymns, Scripture, etc.) inside the tables as they are currently.
-3. **Keywords:** The system finds data by looking for these words:
-* *Fecha, Pastor, Bienvenida, Himno, Lectura, Oración, Misionero, Lección, Sermón, Diezmo, Especial.*
-* *Example:* If you change "Himno Inicial" to "Canto de Entrada", the system might miss it. Try to keep the labels consistent.
+Worship Service (or Culto Divino)
 
+Announcements (or Anuncios)
 
+Standard Fields: The system looks for these words in a line to extract the text next to them:
 
----
+Date, Pastor, Welcome, Hymn, Offering, Children's Story, Sermon, Sunset.
 
-## 📂 Project Structure
+Example of a good layout:
 
-* `boletin.docx` - The source file you upload every week.
-* `index.html` - The generated file (do not edit this manually; it gets overwritten).
-* `template.html` - Edit this file if you want to change colors, fonts, or the layout structure.
-* `build.js` - The brain of the operation (Node.js script).
+Worship Service Welcome: Elder John Hymn: #500 Sermon: Pastor Smith
 
-## 🆘 Troubleshooting
+🎨 Customizing the Design
+To change how the bulletin looks (colors, fonts, logo):
 
-* **The website shows an old bulletin:**
-* Check the **Actions** tab in GitHub to see if the build failed.
-* Clear your browser cache (Ctrl+F5).
+Edit template.html in this repository.
 
+It uses standard HTML/CSS.
 
-* **A name is missing:**
-* Check the Word doc. Did you accidentally delete a label like "Invocación:"?
+Variables are marked with double brackets, e.g., {{pastor}}. Do not remove these variables, or the data will not appear.
 
+🛠 Troubleshooting
+Website shows 404: Go to Repo Settings > Pages and ensure "Deploy from Branch" is set to gh-pages.
 
-* **The formatting looks weird:**
-* Did someone upload a PDF instead of a DOCX? This system only accepts `.docx`.
+Old bulletin shows: Clear browser cache. Check the "Actions" tab in GitHub to see if the build failed.
+
+Data missing: Check the Word doc. Did you spell "Sermon" correctly? Is the file named boletin.docx?
+
+graph LR
+    A[Secretary] -- Email w/ docx --> B(Gmail Bodyguard);
+    B -- Validated Forward --> C(Make.com Robot);
+    C -- Upload File --> D{GitHub Repo};
+    D -- Auto-Build --> E[Church Website];
+    
+    style B fill:#ffcccc,stroke:#333,stroke-width:2px;
+    style C fill:#ccffcc,stroke:#333,stroke-width:2px;
+    style E fill:#ccccff,stroke:#333,stroke-width:4px;
