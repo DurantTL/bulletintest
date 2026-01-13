@@ -1,6 +1,3 @@
-Here is a professional and clear `README.md` file for your repository. You can copy-paste this directly into GitHub so you (or anyone helping you) will know exactly how this system works.
-
----
 
 # 📋 Generador Automático de Boletín (Church Bulletin Automation)
 
