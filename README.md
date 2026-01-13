@@ -1,3 +1,5 @@
+Here is the full code for your `README.md` file. You can copy this entire block and paste it directly into your GitHub repository.
+
 ```markdown
 # 📋 Church Bulletin Automator
 
