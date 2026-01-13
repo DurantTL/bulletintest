@@ -120,7 +120,7 @@ Copiar este código HTML donde quieras mostrar el boletín:
   .bulletin-wrapper iframe {
     width: 100%;
     border: none;
-    height: 2400px;
+    height: 1600px;
   }
   @media (max-width: 768px) {
     .bulletin-wrapper iframe {
