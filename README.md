@@ -1,4 +1,4 @@
-Here is the full code for your `README.md` file. You can copy this entire block and paste it directly into your GitHub repository.
+### Updated `README.md` (Copy & Replace)
 
 ```markdown
 # 📋 Church Bulletin Automator
@@ -7,16 +7,13 @@ This system automatically updates the church website bulletin by reading a Word 
 
 ## 📊 How It Works
 
-```mermaid
-graph LR
-    A[Secretary] -- Email w/ docx --> B(Gmail Bodyguard);
-    B -- Validated Forward --> C(Make.com Robot);
-    C -- Upload File --> D{GitHub Repo};
-    D -- Auto-Build --> E[Church Website];
-    
-    style B fill:#ffcccc,stroke:#333,stroke-width:2px;
-    style C fill:#ccffcc,stroke:#333,stroke-width:2px;
-    style E fill:#ccccff,stroke:#333,stroke-width:4px;
+```text
++-----------+       +-----------+       +----------+       +--------+       +---------+
+| Secretary | ----> |   Gmail   | ----> | Make.com | ----> | GitHub | ----> | Website |
++-----------+       | Bodyguard |       |  Robot   |       |  Repo  |       | (Live)  |
+   (Email)          +-----------+       +----------+       +--------+       +---------+
+                          |                   |                 |
+                    (Check Sender)      (Upload File)     (Auto-Build)
 
 ```
 
