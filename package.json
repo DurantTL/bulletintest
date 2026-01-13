@@ -1,6 +1,11 @@
 {
-  "name": "bulletin-builder",
+  "name": "vanburen-bulletin",
   "version": "1.0.0",
+  "description": "Automated church bulletin generator for Van Buren SDA Church",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
   "dependencies": {
     "mammoth": "^1.6.0"
   }
