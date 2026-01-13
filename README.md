@@ -1,5 +1,3 @@
-### Updated `README.md` (Copy & Replace)
-
 ```markdown
 # 📋 Church Bulletin Automator
 
