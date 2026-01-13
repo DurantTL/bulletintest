@@ -37,53 +37,53 @@
 <div class="vb-bulletin">
     <header class="vb-hero">
         <h1>·S A B A D O·</h1>  
-        <h1>·2026 DEVOTIONALS: The 2026 Devotional Book order form is on the foyer table.· </h1>
+        <h1>·December 20, 2025· </h1>
         <p>902 Oak Grove Rd, Van Buren, AR 72956</p>
-        <div class="meta"> Pastor: <strong></strong></div>
+        <div class="meta"> Pastor: <strong>479-646-8567</strong></div>
     </header>
     <div class="vb-grid">
         <article class="vb-card">
             <h2>Versículo de la Semana</h2>
-            <div class="vb-verse"></div>
-            <div class="vb-ref"></div>
+            <div class="vb-verse">{{verse_text}}</div>
+            <div class="vb-ref">{{verse_ref}}</div>
             <hr class="vb-rule">
             <h2>Escuela Sabática</h2>
             <table class="vb-table">
                 <tr><td class="vb-col-what">Bienvenida</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
                 <tr><td class="vb-col-what">Himno Inicial</td> <td class="vb-col-info"></td> <td class="vb-col-who">Servicio de Canto</td></tr>
-                <tr><td class="vb-col-what">Lectura Bíblica</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Misionero</td><td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Repaso de la Lección</td> <td class="vb-col-info"></td> <td class="vb-col-who">Maestros</td></tr>
+                <tr><td class="vb-col-what">Lectura Bíblica</td> <td class="vb-col-info">{{ss_read_ref}}</td> <td class="vb-col-who">{{ss_read_who}}</td></tr>
+                <tr><td class="vb-col-what">Misionero</td><td class="vb-col-info"></td> <td class="vb-col-who">10:45 AM</td></tr>
+                <tr><td class="vb-col-what">Repaso de la Lección</td> <td class="vb-col-info">Joshua</td> <td class="vb-col-who">Maestros</td></tr>
                 <tr><td class="vb-col-what">Himno Final</td> <td class="vb-col-info">#478</td> <td class="vb-col-who">Servicio de Canto</td></tr>
-                <tr><td class="vb-col-what">Min. Misioneros</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Min. Misioneros</td> <td class="vb-col-info"></td> <td class="vb-col-who">{{ss_mins}}</td></tr>
             </table>
             <hr class="vb-rule">
             <h2>Culto Divino</h2>
             <table class="vb-table">
-                <tr><td class="vb-col-what">Invocación</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Bienvenida</td> <td class="vb-col-info">Canto de Bienvenida</td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Himno Inicial</td> <td class="vb-col-info"></td> <td class="vb-col-who">Servicio de Canto</td></tr>
-                <tr><td class="vb-col-what">Lectura Bíblica</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Oración</td> <td class="vb-col-info">Himno #35</td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Diezmos y Ofrendas</td> <td class="vb-col-info"></td> <td class="vb-col-who">Diego Araujo</td></tr>
-                <tr><td class="vb-col-what">Rincón Infantil</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Especial</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
-                <tr><td class="vb-col-what">Sermón</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Invocación</td> <td class="vb-col-info"></td> <td class="vb-col-who">{{cd_invocation}}</td></tr>
+                <tr><td class="vb-col-what">Bienvenida</td> <td class="vb-col-info">Canto de Bienvenida</td> <td class="vb-col-who">{{cd_welcome}}</td></tr>
+                <tr><td class="vb-col-what">Himno Inicial</td> <td class="vb-col-info">{{cd_hymn}}</td> <td class="vb-col-who">Servicio de Canto</td></tr>
+                <tr><td class="vb-col-what">Lectura Bíblica</td> <td class="vb-col-info">{{cd_read_ref}}</td> <td class="vb-col-who">{{cd_read_who}}</td></tr>
+                <tr><td class="vb-col-what">Oración</td> <td class="vb-col-info">Himno #35</td> <td class="vb-col-who">{{cd_prayer}}</td></tr>
+                <tr><td class="vb-col-what">Diezmos y Ofrendas</td> <td class="vb-col-info">{{cd_tithe}}</td> <td class="vb-col-who">Diego Araujo</td></tr>
+                <tr><td class="vb-col-what">Rincón Infantil</td> <td class="vb-col-info"></td> <td class="vb-col-who">{{cd_kids}}</td></tr>
+                <tr><td class="vb-col-what">Especial</td> <td class="vb-col-info"></td> <td class="vb-col-who">{{cd_special}}</td></tr>
+                <tr><td class="vb-col-what">Sermón</td> <td class="vb-col-info"></td> <td class="vb-col-who">{{cd_sermon}}</td></tr>
                 <tr><td class="vb-col-what">Himno Final</td> <td class="vb-col-info">Himno #267</td> <td class="vb-col-who">Servicio de Canto</td></tr>
-                <tr><td class="vb-col-what">Oración Final</td> <td class="vb-col-info"></td> <td class="vb-col-who"></td></tr>
+                <tr><td class="vb-col-what">Oración Final</td> <td class="vb-col-info"></td> <td class="vb-col-who">{{cd_invocation}}</td></tr>
             </table>
         </article>
         <aside>
             <div class="vb-card" style="margin-bottom: 20px;">
                 <h4>Anciano de Turno:</h4>
-                <h3></h3>
+                <h3>{{elder}}</h3>
             </div>
             <div class="vb-card">
                 <h2>Anuncios</h2>
-                <ul class="vb-list"></ul>
+                <ul class="vb-list"><li>Dec 20th		Outreach Training after church</li><li>Jan 3rd			Fellowship meal in gym</li><li>Jan 8th			Board Meeting 7 PM</li><li>Jan 12th		Cooking/Health Class 5:30 PM in gym</li><li>The joy and blessing of the Sabbath concludes………...… Today 5:08 PM</li><li>and begins again……………………….…….. Next Friday 5:11 PM</li></ul>
                 <hr class="vb-rule">
                 <div class="vb-stats">
-                    <div class="vb-stat"><span class="k"></span>Sociedad de Jovenes<span class="v"></span></div>
+                    <div class="vb-stat"><span class="k"></span>Sociedad de Jovenes<span class="v">Jan 10th		Vespers & Games in gym – 5 PM</span></div>
                     <div class="vb-stat"><span class="k">Puesta del Sol</span><span class="v"></span></div>
                 </div>
             </div>
