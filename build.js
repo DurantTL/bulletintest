@@ -6,7 +6,7 @@ const TEMPLATE_FILE = 'template.html';
 const OUTPUT_FILE = 'index.html';
 
 // ============================================================
-// VAN BUREN SPANISH BULLETIN PARSER 123
+// VAN BUREN SPANISH BULLETIN PARSER
 // Extracts all fields for the church bulletin website
 // ============================================================
 
